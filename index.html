@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Access Required</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            height: 100vh; 
+            overflow: hidden; 
+            background: #000; 
+            font-family: 'Courier New', Courier, monospace;
+            user-select: none;
+        }
+
+        /* --- THE HACKER INTERFACE --- */
+        #login-screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            color: #0f0; /* Hacker Green */
+        }
+
+        .terminal-window {
+            border: 2px solid #0f0;
+            padding: 40px;
+            background: rgba(0, 20, 0, 0.9);
+            box-shadow: 0 0 20px #0f0;
+            text-align: center;
+            max-width: 90%;
+        }
+
+        h1 { font-size: 24px; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; }
+        
+        .cursor { animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        input {
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid #0f0;
+            color: #0f0;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 20px;
+            text-align: center;
+            outline: none;
+            margin-top: 20px;
+            width: 200px;
+            padding: 5px;
+        }
+
+        button {
+            margin-top: 20px;
+            background: #0f0;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-weight: bold;
+            font-family: 'Courier New', Courier, monospace;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        button:hover { box-shadow: 0 0 15px #0f0; transform: scale(1.05); }
+
+        .error-msg { color: red; margin-top: 10px; display: none; }
+
+        /* --- THE 3D GALAXY (Hidden Initially) --- */
+        #galaxy-container {
+            opacity: 0;
+            transition: opacity 3s;
+            height: 100%;
+            perspective: 1000px;
+            transform-style: preserve-3d;
+            display: flex;
+        }
+        #drag-container, #spin-container {
+            position: relative; display: flex; margin: auto;
+            transform-style: preserve-3d; transform: rotateX(-10deg);
+        }
+        #spin-container { width: 120px; height: 170px; animation: spinRevert 20s infinite linear; }
+        #spin-container img {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            border-radius: 10px; box-shadow: 0 0 8px #fff;
+            -webkit-box-reflect: below 10px linear-gradient(transparent, transparent, #0005);
+        }
+        #ground {
+            width: 900px; height: 900px; position: absolute; top: 100%; left: 50%;
+            transform: translate(-50%, -50%) rotateX(90deg);
+            background: -webkit-radial-gradient(center center, farist-side, #9993 5%, transparent 100%);
+        }
+        @keyframes spinRevert { from { transform: rotateY(360deg); } to { transform: rotateY(0deg); } }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <div class="terminal-window">
+            <h1>Subject: PRIYA<span class="cursor">_</span></h1>
+            <p>Enter Protocol Password to Access Heart:</p>
+            <input type="text" id="passwordInput" placeholder="Enter Password" autocomplete="off">
+            <br>
+            <button onclick="checkPassword()">DECRYPT</button>
+            <p id="error" class="error-msg">ACCESS DENIED. TRY AGAIN.</p>
+        </div>
+    </div>
+
+    <div id="galaxy-container">
+        <div id="drag-container">
+            <div id="spin-container">
+                <img src="memories/img1.jpg" alt="">
+                <img src="memories/img2.jpg" alt="">
+                <img src="memories/img3.jpg" alt="">
+                <img src="memories/img4.jpg" alt="">
+                <img src="memories/img5.jpg" alt="">
+                <img src="memories/img6.jpg" alt="">
+                <img src="memories/img7.jpg" alt="">
+                <img src="memories/img8.jpg" alt="">
+                <img src="memories/img9.jpg" alt="">
+                <img src="memories/img10.jpg" alt="">
+                <img src="memories/img11.jpg" alt="">
+                <img src="memories/img12.jpg" alt="">
+            </div>
+            <div id="ground"></div>
+        </div>
+    </div>
+
+    <audio id="bg-music" loop> <source src="music.mp3" type="audio/mp3"> </audio>
+
+    <script>
+        // --- CONFIGURATION: CHANGE PASSWORD HERE ---
+        const CORRECT_PASSWORD = "171224"; 
+        // -------------------------------------------
+
+        function checkPassword() {
+            const input = document.getElementById("passwordInput").value;
+            const errorMsg = document.getElementById("error");
+            const loginScreen = document.getElementById("login-screen");
+            const galaxy = document.getElementById("galaxy-container");
+            const audio = document.getElementById("bg-music");
+
+            // Check if password matches (ignoring capital letters)
+            if (input.toLowerCase() === CORRECT_PASSWORD.toLowerCase()) {
+                
+                // Success!
+                errorMsg.style.display = "none";
+                audio.play(); // Start Music
+                
+                // Fade out login
+                loginScreen.style.transition = "opacity 2s";
+                loginScreen.style.opacity = "0";
+                
+                // Show Galaxy
+                setTimeout(() => {
+                    loginScreen.style.display = "none";
+                    galaxy.style.opacity = "1";
+                    init(1000); // Start 3D logic
+                }, 2000);
+
+            } else {
+                // Wrong Password
+                errorMsg.style.display = "block";
+                document.getElementById("passwordInput").value = ""; // Clear input
+            }
+        }
+
+        // --- 3D LOGIC ---
+        var radius = 240; 
+        var autoRotate = true; 
+        var rotateSpeed = -60; 
+        var imgWidth = 120; 
+        var imgHeight = 170; 
+
+        var odrag = document.getElementById('drag-container');
+        var ospin = document.getElementById('spin-container');
+        var aImg = ospin.getElementsByTagName('img');
+        var aEle = [...aImg]; 
+        
+        ospin.style.width = imgWidth + "px";
+        ospin.style.height = imgHeight + "px";
+        var ground = document.getElementById('ground');
+        ground.style.width = radius * 3 + "px";
+        ground.style.height = radius * 3 + "px";
+
+        function init(delayTime) {
+            for (var i = 0; i < aEle.length; i++) {
+                aEle[i].style.transform = "rotateY(" + (i * (360 / aEle.length)) + "deg) translateZ(" + radius + "px)";
+                aEle[i].style.transition = "transform 1s";
+                aEle[i].style.transitionDelay = delayTime || (aEle.length - i) / 4 + "s";
+            }
+        }
+
+        function applyTranform(obj) {
+            if(tY > 180) tY = 180;
+            if(tY < 0) tY = 0;
+            obj.style.transform = "rotateX(" + (-tY) + "deg) rotateY(" + (tX) + "deg)";
+        }
+        function playSpin(yes) {
+            ospin.style.animationPlayState = (yes ? 'running' : 'paused');
+        }
+
+        var sX, sY, nX, nY, desX = 0, desY = 0, tX = 0, tY = 10;
+        if (autoRotate) {
+            var animationName = (rotateSpeed > 0 ? 'spin' : 'spinRevert');
+            ospin.style.animation = `${animationName} ${Math.abs(rotateSpeed)}s infinite linear`;
+        }
+
+        document.onpointerdown = function (e) {
+            clearInterval(odrag.timer);
+            e = e || window.event;
+            var sX = e.clientX, sY = e.clientY;
+            this.onpointermove = function (e) {
+                e = e || window.event;
+                var nX = e.clientX, nY = e.clientY;
+                desX = nX - sX;
+                desY = nY - sY;
+                tX += desX * 0.1;
+                tY += desY * 0.1;
+                applyTranform(odrag);
+                sX = nX; sY = nY;
+            };
+            this.onpointerup = function (e) {
+                odrag.timer = setInterval(function () {
+                    desX *= 0.95; desY *= 0.95;
+                    tX += desX * 0.1; tY += desY * 0.1;
+                    applyTranform(odrag);
+                    playSpin(false);
+                    if (Math.abs(desX) < 0.5 && Math.abs(desY) < 0.5) {
+                        clearInterval(odrag.timer);
+                        playSpin(true);
+                    }
+                }, 17);
+                this.onpointermove = this.onpointerup = null;
+            };
+            return false;
+        };
+    </script>
+</body>
+</html>
+
