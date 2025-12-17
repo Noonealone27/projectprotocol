@@ -12,7 +12,7 @@
             overflow: hidden; 
             background: #000; 
             font-family: 'Courier New', Courier, monospace;
-            user-select: none;
+            user-select: none; /* Prevents highlighting text while dragging */
         }
 
         /* --- THE HACKER INTERFACE --- */
@@ -24,8 +24,8 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 100;
-            color: #0f0; /* Hacker Green */
+            z-index: 100; /* On top of everything */
+            color: #0f0; 
         }
 
         .terminal-window {
@@ -54,6 +54,10 @@
             margin-top: 20px;
             width: 200px;
             padding: 5px;
+            /* FIX: Allow typing interaction */
+            user-select: auto; 
+            pointer-events: auto;
+            z-index: 101;
         }
 
         button {
@@ -66,6 +70,9 @@
             font-family: 'Courier New', Courier, monospace;
             cursor: pointer;
             transition: 0.3s;
+            /* FIX: Allow clicking interaction */
+            pointer-events: auto;
+            z-index: 101;
         }
         button:hover { box-shadow: 0 0 15px #0f0; transform: scale(1.05); }
 
@@ -135,7 +142,7 @@
 
     <script>
         // --- CONFIGURATION: CHANGE PASSWORD HERE ---
-        const CORRECT_PASSWORD = "171224"; 
+        const CORRECT_PASSWORD = "1234"; 
         // -------------------------------------------
 
         function checkPassword() {
@@ -145,28 +152,24 @@
             const galaxy = document.getElementById("galaxy-container");
             const audio = document.getElementById("bg-music");
 
-            // Check if password matches (ignoring capital letters)
             if (input.toLowerCase() === CORRECT_PASSWORD.toLowerCase()) {
-                
-                // Success!
+                // Success
                 errorMsg.style.display = "none";
-                audio.play(); // Start Music
+                audio.play().catch(error => console.log("Music blocked until interaction"));
                 
-                // Fade out login
                 loginScreen.style.transition = "opacity 2s";
                 loginScreen.style.opacity = "0";
                 
-                // Show Galaxy
                 setTimeout(() => {
                     loginScreen.style.display = "none";
                     galaxy.style.opacity = "1";
-                    init(1000); // Start 3D logic
+                    init(1000); 
                 }, 2000);
 
             } else {
-                // Wrong Password
+                // Fail
                 errorMsg.style.display = "block";
-                document.getElementById("passwordInput").value = ""; // Clear input
+                document.getElementById("passwordInput").value = ""; 
             }
         }
 
@@ -211,10 +214,15 @@
             ospin.style.animation = `${animationName} ${Math.abs(rotateSpeed)}s infinite linear`;
         }
 
+        // --- THE FIX IS HERE ---
         document.onpointerdown = function (e) {
+            // IF USER CLICKS INPUT OR BUTTON, DO NOT DRAG
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
+
             clearInterval(odrag.timer);
             e = e || window.event;
             var sX = e.clientX, sY = e.clientY;
+            
             this.onpointermove = function (e) {
                 e = e || window.event;
                 var nX = e.clientX, nY = e.clientY;
@@ -243,4 +251,3 @@
     </script>
 </body>
 </html>
-
